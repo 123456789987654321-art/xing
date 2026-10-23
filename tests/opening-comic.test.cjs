@@ -10,7 +10,19 @@ j.launch();assert.equal(j.page,'modes');assert.equal(stops,1);
 assert.match(html,/冒险模式/);assert.match(html,/挑战模式/);assert.match(html,/<canvas/);
 j.launch();assert.equal(j.page,'modes','repeated start ignored');
 j.comic('opening');assert.equal(j.story.id,'opening');assert.equal(j.panel,0);
-if(j.story.pages){assert.ok(fs.existsSync(j.story.pages[0]));assert.match(html,/j-comic-page/);}
+const openingPages=['flight','impact','damage','cockpit','descent','canyon'].map(name=>'assets/story/opening/'+name+'.png').concat('assets/story/comics/valley-0.jpg');
+assert.deepEqual(j.story.pages,openingPages,'original opening artwork precedes the valley comic');
+const originalCampaign=j.campaign;let pageAcknowledged=0;
+j.campaign={...originalCampaign,state:originalCampaign.state,acknowledge(){pageAcknowledged++;return false}};
+for(const [i,asset] of openingPages.entries()){
+ assert.ok(fs.existsSync(asset),asset);
+ assert.equal(j.pageIndex,i);
+ assert.ok(html.includes('src="'+asset+'"'),'reader displays '+asset);
+ assert.equal(pageAcknowledged,0,'story remains pending until all pages are read');
+ j.nextPanel();
+}
+assert.equal(pageAcknowledged,1,'last page finishes the opening');
+j.campaign=originalCampaign;j.comic('opening');
 // Also exercise the retained panel reader used by stories without a supplied full page.
 j.story={...j.story,pages:undefined};j.paintComic();
 for(const p of j.story.panels.slice(0,5))assert.ok(fs.existsSync(p.asset),p.asset);

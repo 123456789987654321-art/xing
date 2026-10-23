@@ -175,6 +175,9 @@
  // 萤灯谷整页漫画：0 是进入新地图自然弹出的序章，1-5 对应第 1-5 关
  const comicPages={opening:0,'main-01':1,'main-02':2,'main-03':3,'main-04':4,'main-05':5};
  for(const [id,i] of Object.entries(comicPages))if(stories[id])stories[id].pages=[`assets/story/comics/valley-${i}.jpg`];
+ // Keep the original opening sequence before the arrival in the valley.
+ stories.opening.pages=['flight','impact','damage','cockpit','descent','canyon']
+  .map(name=>`assets/story/opening/${name}.png`).concat(stories.opening.pages);
  // 进入第二章 / 第三章前播放各自的 0 号漫画（图还没到位时该段显示“待补”）
  if(stories['travel-01'])stories['travel-01'].pages=['assets/story/comics/wind-0.jpg'];
  if(stories['travel-02'])stories['travel-02'].pages=['assets/story/comics/light-0.jpg'];
