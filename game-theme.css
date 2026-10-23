@@ -1,0 +1,91 @@
+/* Warm 2D stage atmospheres behind the real 3D playfield. */
+#gameBackdrop{display:none;position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+body.journey-game{background:#edeedb;color:#29423b;--play-ink:#29423b;--play-accent:#426d53;--play-edge:#75916b}
+body.journey-game #sky{display:none}body.journey-game #gameBackdrop{display:block;background:radial-gradient(ellipse at 50% 44%,#fffdf4 0%,#f3f3dd 40%,#d4e4c7 75%,#9ab59c 120%)}
+body.journey-game[data-place=wind]{--play-ink:#524635;--play-accent:#8a6841;--play-edge:#b19468}
+body.journey-game[data-place=wind] #gameBackdrop{background:radial-gradient(ellipse at 50% 44%,#fffaf0 0%,#f6ead1 40%,#dfc8a1 78%,#b99e79 120%)}
+body.journey-game[data-place=light]{--play-ink:#3d4763;--play-accent:#6478a6;--play-edge:#99a5c0}
+body.journey-game[data-place=light] #gameBackdrop{background:radial-gradient(ellipse at 50% 44%,#fffef5 0%,#eef0f1 45%,#d3dfeb 78%,#b5bbd3 120%)}
+#gameBackgroundArt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75}
+.game-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 44%,#fffaf0a8 0%,#fffaf070 35%,transparent 70%)}
+#gameBackdrop:before,#gameBackdrop:after{content:'';position:absolute;bottom:-20vh;width:48vw;height:90vh;border-radius:55% 55% 0 0;background:var(--play-edge);opacity:.12;transform:rotate(-20deg);left:-30vw}
+#gameBackdrop:after{left:auto;right:-30vw;transform:rotate(20deg)}
+.game-place-name{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.24em;color:var(--play-ink);opacity:.6;white-space:nowrap}
+.journey-game #gl{position:fixed;z-index:1;filter:drop-shadow(0 12px 18px #4053331b)}
+.journey-game .hud-box{background:#fffdf1e8;border:1px solid #8e9c7d60;color:var(--play-ink);box-shadow:0 4px 0 #4f654318,0 8px 24px #424c3010;backdrop-filter:blur(10px)}
+.journey-game .hud-mode,.journey-game .hud-level,.journey-game .remain{color:var(--play-ink)}
+.journey-game .hud-mode{font-size:13px;letter-spacing:.1em}
+.journey-game .remain b,.journey-game .hud-level b{color:var(--play-accent)}
+.journey-game .score{color:var(--play-accent);text-shadow:none;font-family:Georgia,"Microsoft YaHei",serif}
+.journey-game .score-sub{color:#69715f}.journey-game .score-sub span{color:#846122}
+.journey-game .prog{background:#d9dfcf}.journey-game .prog i{background:linear-gradient(90deg,#83a67e,var(--play-accent));box-shadow:none}
+.journey-game .stars{display:none}.journey-game .level-back-btn{border:1px solid #a0b094;background:#f4f5e7;color:var(--play-ink);border-radius:6px;font-size:12px}
+.journey-game .level-back-btn:hover{background:#e7eddb}.journey-game .icon-btn{background:#fffaf0e8;border:1px solid #a1ad9255;color:var(--play-ink);box-shadow:0 3px 0 #4f654318;border-radius:10px}
+.journey-game .icon-btn:hover{background:#e6ecda;color:var(--play-ink)}.journey-game .icon-btn.off{color:#a7a594}
+.journey-game .zoom-reset{background:#fff9ea;border:1px solid #a6b09a;color:var(--play-accent);box-shadow:0 3px 0 #4f654318}
+.journey-game .zoom-plus{color:var(--play-accent)}.journey-game #zoomSlider{accent-color:var(--play-accent)}
+.journey-game #overlay{background:#2b3a3059;backdrop-filter:blur(6px)}
+.journey-game .ov-card{background:#fffaf0;color:var(--play-ink);border:1px solid #9baa8c;border-radius:14px;box-shadow:0 14px 55px #283d3030}
+.journey-game .ov-title{color:var(--play-ink);text-shadow:none}.journey-game .ov-title.win{color:#3d7750}.journey-game .ov-title.lose{color:#a55b42}
+.journey-game .ov-sub,.journey-game .ov-help,.journey-game .ov-row{color:#65715f}.journey-game .ov-help em,.journey-game .ov-help h4{color:#8c6b2a}
+.journey-game .ov-row b{color:var(--play-ink)}.journey-game .ov-row b.gold{color:#986e25}.journey-game .ov-row b.green{color:#3d7750}
+.journey-game .ov-btn{color:#fff;background:var(--play-accent);box-shadow:0 3px 0 #273f2d33;border-radius:7px}
+.journey-game .ov-btn.plain{color:var(--play-ink);background:#eef1e3;border-color:#c2cbb5}.journey-game .ov-emoji{font-size:28px;filter:saturate(.7)}
+.journey-game .dialog-back{background:#fff9ea;color:var(--play-ink);border-color:#a3b293}
+.journey-game #banner{color:var(--play-ink);text-shadow:0 2px 0 #fff9eb}.journey-game .bn-lv{color:var(--play-accent);text-shadow:none}.journey-game .bn-sub{color:var(--play-ink)}
+.journey-game #tip{background:#fffaf0f0;color:var(--play-ink);border-color:#a8b69b;box-shadow:0 5px 18px #283e3020}
+.journey-game .toast{color:#3d6543;text-shadow:0 2px 0 #fffaf0,1px 0 0 #fffaf0,-1px 0 0 #fffaf0}
+.journey-game .throw-gauge,.journey-game .tower-status,.journey-game .seesaw-counts,.journey-game .challenge-panel{background:#fffaf0ed;color:var(--play-ink);border-color:#a9b79a;box-shadow:0 5px 25px #344e3020}
+.journey-game .throw-gauge p,.journey-game #challengeAmmo{color:#626f5d}.journey-game .seesaw-counts strong{color:#8c6727}
+@media(max-width:600px){.game-place-name{bottom:88px;font-size:9px;letter-spacing:.1em}.journey-game #gl{filter:drop-shadow(0 8px 12px #40533316)}}
+/* ===== HUD 轻量融合：暖白玻璃 + 棕色细描边，保留半透明、不加厚投影 ===== */
+.journey-game .hud-box{background:#fdf6e6de;border:2px solid #8a5f3159;border-radius:16px;color:#4b3a26;box-shadow:0 6px 18px #3a2a1222;backdrop-filter:blur(9px)}
+.journey-game .hud-mode,.journey-game .hud-level,.journey-game .remain{color:#5a4526}
+.journey-game .hud-mode{font-family:"STHupo","华文琥珀","YouYuan","幼圆",sans-serif;font-size:13px;letter-spacing:.08em}
+.journey-game .hud-level b,.journey-game .remain b{color:#a4691f}
+.journey-game .level-back-btn{background:#fdf6e6cc;border:1.5px solid #8a5f3166;border-radius:11px;color:#5a4526;font-family:"STHupo","华文琥珀","YouYuan","幼圆",sans-serif;font-size:13px;box-shadow:none}
+.journey-game .level-back-btn:hover{background:#fff3d6e6;border-color:#8a5f31}
+.journey-game .score{color:#a4691f;font-family:"STHupo","华文琥珀","YouYuan","幼圆",sans-serif;text-shadow:0 1px 0 #fff8e6}
+.journey-game .score-sub{color:#7a6242}.journey-game .score-sub span{color:#8a6320}
+.journey-game .prog{background:#d9cfb6}.journey-game .prog i{background:linear-gradient(90deg,#e2b566,#a4691f);box-shadow:none}
+.journey-game .icon-btn{background:#fdf6e6cc;border:1.5px solid #8a5f3166;color:#5a4526;border-radius:14px;box-shadow:none;backdrop-filter:blur(8px)}
+.journey-game .icon-btn:hover{background:#fff3d6e6;border-color:#8a5f31;color:#4b3a26}
+.journey-game .icon-btn.off{color:#b3a894;border-color:#8a5f3138}
+.journey-game .zoom-reset{background:#fdf6e6cc;border:1.5px solid #8a5f3166;color:#8a5f31;box-shadow:none;border-radius:13px}
+.journey-game .zoom-reset:hover{background:#fff3d6e6;border-color:#8a5f31}
+.journey-game .zoom-plus{color:#8a5f31}
+.journey-game #zoomSlider::-webkit-slider-runnable-track{background:#ded3ba;border:2px solid #8a5f3199}
+.journey-game #zoomSlider::-webkit-slider-thumb{background:#fffaea;border:2px solid #8a5f31;box-shadow:0 2px 6px #24150533}
+.journey-game #zoomSlider::-moz-range-track{background:#ded3ba;border:2px solid #8a5f3199}
+.journey-game #zoomSlider::-moz-range-thumb{background:#fffaea;border:2px solid #8a5f31}
+/* ===== 弹窗（暂停 / 结算 / 玩法）：卡纸 + 木牌按钮 ===== */
+.journey-game #overlay{background:#2a2010a8;backdrop-filter:blur(7px)}
+.journey-game .ov-card{background:linear-gradient(#fffdf4,#fdf2d9);border:3px solid #7a5330;border-radius:22px;color:#4b2f1c;box-shadow:0 10px 0 #7a533026,0 26px 60px #2415054d}
+.journey-game .ov-title{color:#4b2f1c;font-family:"STHupo","华文琥珀","YouYuan","幼圆",sans-serif;letter-spacing:.06em;text-shadow:0 1px 0 #fffdf2}
+.journey-game .ov-title.win{color:#3f7a46;text-shadow:0 1px 0 #fffdf2}
+.journey-game .ov-title.lose{color:#b4553a;text-shadow:0 1px 0 #fffdf2}
+.journey-game .ov-sub,.journey-game .ov-row{color:#7a6242}
+.journey-game .ov-row b{color:#4b2f1c}.journey-game .ov-row b.gold{color:#a4691f}.journey-game .ov-row b.green{color:#3f7a46}
+.journey-game .ov-btn{background:linear-gradient(#ffd479,#f0a93c);color:#4b2f1c;border:2.5px solid #7a5330;border-radius:15px;box-shadow:0 4px 0 #7a5330,0 8px 18px #2415052e;font-family:"STHupo","华文琥珀","YouYuan","幼圆",sans-serif;font-size:17px;letter-spacing:.05em;text-shadow:0 1px 0 #ffe9b4}
+.journey-game .ov-btn:hover{filter:brightness(1.03);transform:translateY(-2px);box-shadow:0 6px 0 #7a5330,0 10px 20px #24150538}
+.journey-game .ov-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #7a5330}
+.journey-game .ov-btn.plain{background:linear-gradient(#fffaea,#ffe6ac);color:#5a4526;border:2.5px solid #8a5f31;box-shadow:0 3px 0 #8a5f31,0 6px 14px #24150526}
+.journey-game .ov-btn.plain:hover{background:linear-gradient(#fffdf2,#ffefc9);box-shadow:0 5px 0 #8a5f31,0 8px 16px #2415052e}
+.journey-game .ov-help{color:#6d5a3d}.journey-game .ov-help h4,.journey-game .ov-help em{color:#a4691f}
+.journey-game .dialog-back{background:linear-gradient(#fffaea,#ffe6ac);color:#5a4526;border:2px solid #8a5f31;border-radius:12px}
+/* ===== 模式选择页：右上角返回 ===== */
+.journey .j-mode-back{position:absolute;right:30px;top:26px;z-index:3;display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:3px solid #59351e;border-radius:14px;background:linear-gradient(#fff29c 0%,#ffdc57 45%,#f6b830 100%);color:#51301b;font-family:"STHupo","华文琥珀","YouYuan","幼圆",sans-serif;font-size:16px;letter-spacing:.06em;box-shadow:0 5px 0 #8b5427,inset 0 2px 0 #fff8cf;cursor:pointer;transition:filter .15s,translate .15s}
+.journey .j-mode-back:hover{filter:brightness(1.05);translate:0 -2px}
+.journey .j-mode-back:active{translate:0 3px;box-shadow:0 2px 0 #8b5427}
+@media(max-width:500px){.journey .j-mode-back{right:14px;top:14px;padding:7px 13px;font-size:13px;border-width:2px;border-radius:11px}}
+/* ===== 模式选择页：游戏名 + 竖排按钮 ===== */
+.journey .j-space .j-mode-title{position:absolute;left:50%;top:20%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;pointer-events:none;user-select:none;z-index:2}
+.journey .j-space .j-mode-title::before{content:'';position:absolute;left:50%;top:52%;width:min(80vw,780px);height:280px;transform:translate(-50%,-50%);background:radial-gradient(ellipse at center,#7ecbe52e 0%,#7ecbe510 45%,transparent 72%);pointer-events:none}
+.journey .j-mode-title b{position:relative;font-family:"STZhongsong","Songti SC","SimSun",serif;font-weight:700;font-size:clamp(46px,7.2vw,92px);line-height:1.12;letter-spacing:.2em;text-indent:.2em;background:linear-gradient(180deg,#fffdf4 0%,#fff2cf 44%,#f7d489 80%,#efc169 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(0 0 26px #ffc45a3d) drop-shadow(0 8px 22px #000000b3)}
+.journey .j-mode-emblem{font-size:clamp(22px,2.8vw,36px);color:#ffd479;text-shadow:0 0 18px #ffb640aa,0 0 42px #ffb64055}
+.journey .j-mode-title small{position:relative;font-size:clamp(11px,1.25vw,16px);letter-spacing:.4em;text-indent:.4em;color:#cfe3f8;text-shadow:0 2px 12px #000000aa,0 0 22px #7ecbe54d}
+@media(max-width:500px){.journey .j-space .j-mode-title{top:15%;gap:8px}.journey .j-mode-title b{letter-spacing:.12em;text-indent:.12em;font-size:clamp(34px,11vw,52px)}}
+/* ===== 模式选择页：竖排按钮 ===== */
+.journey .j-mode-actions{flex-direction:column;width:min(320px,76%);gap:16px}
+.journey .j-mode-actions .j-space-login{width:100%}
+@media(max-width:500px){.journey .j-mode-title{top:12%;gap:5px}.journey .j-mode-actions{width:min(280px,80%);gap:14px}}

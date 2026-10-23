@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05060f">
+<title>星隙几何 · 一段向上的旅程</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="journey.css">
+<link rel="stylesheet" href="journey-updates.css">
+<link rel="stylesheet" href="game-theme.css">
+</head>
+<body>
+<div id="sky" aria-hidden="true"></div>
+<div id="gameBackdrop" aria-hidden="true"><img id="gameBackgroundArt" alt=""><div class="game-vignette"></div></div>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<!-- ============ 主菜单 ============ -->
+<div id="menu" class="screen hidden">
+  <div class="menu-inner">
+    <h1 class="title">消灭星星<span class="t3d">3D</span></h1>
+    <p class="subtitle">六面消除 · 几何挑战</p>
+    <div class="menu-btns">
+      <button class="mode-btn m-normal" data-mode="normal">
+        <span class="mb-name">普通模式</span>
+      </button>
+      <button class="mode-btn m-challenge" data-mode="challenge">
+        <span class="mb-name">挑战模式</span>
+      </button>
+    </div>
+    <div class="best-line">最高分 <b id="menuBest">0</b></div>
+    <button class="link-btn" id="btnHowto">玩法说明</button>
+    <p class="hint">拖动旋转视角 · 滚轮缩放 · 点击成组方块消除</p>
+  </div>
+</div>
+
+<!-- ============ 游戏内 HUD ============ -->
+<div id="hud" class="hidden">
+  <div class="hud-top">
+    <div class="hud-box hud-left">
+      <div class="hud-mode" id="hudMode">普通模式</div>
+      <div class="hud-level">第 <b id="hudLevel">1</b> 关</div>
+      <button id="btnLevelSelect" class="level-back-btn" type="button" aria-label="返回当前模式选关">← 返回选关</button>
+    </div>
+    <div class="hud-box hud-center hidden" id="hudTimerBox">
+      <div class="timer-num"><b id="timerNum">60</b><span>s</span></div>
+      <div class="timer-bar"><i id="timerFill"></i></div>
+    </div>
+    <div class="hud-box hud-right">
+      <div class="score" id="hudScore">0</div>
+      <div class="score-sub">目标 <span id="hudTarget">0</span></div>
+      <div class="prog"><i id="progFill"></i></div>
+    </div>
+  </div>
+  <div class="zoom-control" role="group" aria-label="视角缩放">
+    <button id="btnResetView" class="zoom-reset" type="button" aria-label="转正当前面，让箭头朝下" title="转正当前面，让箭头朝下（保留缩放）">
+      <svg viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+        <circle cx="16" cy="16" r="10"/><circle cx="16" cy="16" r="4"/>
+        <path d="M16 2v6m0 16v6M2 16h6m16 0h6"/>
+      </svg>
+    </button>
+    <div class="zoom-slider-wrap">
+      <span class="zoom-plus" aria-hidden="true">+</span>
+      <input id="zoomSlider" type="range" min="0" max="100" step="0.1" value="0" aria-label="游戏缩放，向上放大" aria-orientation="vertical" aria-valuetext="100%" />
+    </div>
+  </div>
+  <div class="hud-bottom">
+    <div class="hud-box hud-left">
+      <div class="remain">剩余 <b id="hudRemain">0</b> 块</div>
+      <div class="stars" id="hudStars"></div>
+    </div>
+    <div class="hud-right btns">
+      <button class="icon-btn hint-btn" id="btnHint" title="提示可消除的方块" aria-label="提示可消除的方块">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 15c0-2-3-3-3-7a7 7 0 0 1 14 0c0 4-3 5-3 7v2H8zM9 20h6M10 23h4"/></svg>
+        <span>提示</span>
+      </button>
+      <button class="icon-btn" id="btnHelp" title="玩法说明">?</button>
+      <button class="icon-btn hidden" id="btnMechanicInfo" type="button" title="本关机关说明" aria-label="查看本关机关说明">!</button>
+      <button class="icon-btn" id="btnSound" title="音效开关">♪</button>
+      <button class="icon-btn" id="btnMenu" title="返回菜单">≡</button>
+    </div>
+  </div>
+</div>
+
+<span id="hintStatus" class="sr-only" role="status" aria-live="polite"></span>
+<div id="challengeLabels" aria-hidden="true"></div>
+<aside id="throwGauge" class="throw-gauge hidden" aria-label="投射力度">
+  <div class="throw-gauge-heading"><span>投射力度</span><strong id="throwGaugeValue">0%</strong></div>
+  <div id="throwGaugeTrack" class="throw-gauge-track" role="progressbar" aria-label="投射力度百分比" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="throwGaugeFill"></i></div>
+  <p>拖住弹弓方块向后拉<br>调整方向和拉力 · 松手发射</p><span id="challengeAmmo"></span>
+</aside>
+<aside id="towerStatus" class="tower-status hidden" role="status" aria-live="polite"></aside>
+<div id="seesawCounts" class="seesaw-counts hidden" aria-live="polite"><span id="seesawLeftCount"></span><strong id="seesawMultiplier"></strong><span id="seesawRightCount"></span></div>
+<section id="challengePanel" class="challenge-panel hidden" aria-label="挑战关卡操作">
+  <div id="challengeControls"></div>
+</section>
+
+<div id="toasts"></div>
+<div id="tip"></div>
+<div id="banner"></div>
+<div id="overlay" class="hidden"><div class="ov-shell"><button id="btnDialogBack" class="dialog-back" type="button" data-act="dialogBack" hidden>返回</button><div class="ov-card" id="ovCard"></div></div></div>
+<div id="bootErr" class="hidden"></div>
+<div id="journey" hidden></div>
+
+<script src="js/mathx.js"></script>
+<script src="js/board.js"></script>
+<script src="js/mechanics.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/challenge-geometry.js"></script>
+<script src="js/challenge-tower.js"></script>
+<script src="js/challenge-rubik.js"></script>
+<script src="js/challenge-world.js"></script>
+<script src="js/challenge-projection.js"></script>
+<script src="js/challenge-thumbnails.js"></script>
+<script src="js/challenge-rubik-controls.js"></script>
+<script src="js/challenge-throw.js"></script>
+<script src="js/challenge-game.js"></script>
+<script src="js/app.js"></script>
+<script src="js/journey-state.js"></script>
+<script src="js/journey-data.js"></script>
+<script src="js/space-opening.js"></script>
+<script src="js/opening-video.js"></script>
+<script src="js/journey.js"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+/* Mode selection reuses the entry artwork and yellow buttons. */
+.j-mode-actions{position:absolute;left:50%;bottom:max(14%,calc(env(safe-area-inset-bottom) + 28px));transform:translateX(-50%);display:flex;gap:30px;justify-content:center;width:min(90%,560px)}
+.journey .j-mode-actions .j-space-login{position:relative;left:auto;bottom:auto;transform:none;flex:1;white-space:nowrap;min-width:0}
+.journey .j-stop.unpassed button,.journey .j-route:not(.creative-route) .j-stop.unpassed button{opacity:1;background:#c9c9c9;border-color:#777;color:#444;box-shadow:0 7px 0 #777,0 12px 20px #0002;filter:none}
+.journey .j-stop.unpassed .j-stop-icon{color:#666;opacity:1}
+.journey .j-stop.passed button{position:relative;padding-bottom:20px}
+.journey .j-route:not(.creative-route) .j-stop.passed button{padding-bottom:18px;background:linear-gradient(#f4fbe2,#cfe6ac);border-color:#4f7a46;color:#34542d;box-shadow:0 7px 0 #4f7a46,0 12px 24px #1d3a1f2e}
+.journey .j-stop button .j-stop-note{position:absolute;bottom:7px;left:0;right:0;margin:0;padding:0;height:auto;background:none;box-shadow:none;border-radius:0;font:600 12px/1.2 "Microsoft YaHei",sans-serif;letter-spacing:0;color:#34542d;opacity:1;text-align:center;white-space:nowrap}
+.journey button:focus-visible{outline:3px solid #315b86;outline-offset:5px}
+.journey .j-header nav .j-header-back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:6px 10px}
+.j-header-back svg{display:block;flex:none}
+/* A bound notebook: only the current spread exists, so the page never scrolls. */
+.journey.journal-view{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+.journal-view .j-header{flex:0 0 auto;width:100%;box-sizing:border-box}
+.journal-view .j-notebook{position:relative;flex:1;min-height:0;width:min(1120px,calc(100% - 56px));max-width:1120px;margin:10px auto 24px;padding:22px 28px 14px;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;border:7px solid #805332;border-radius:16px 22px 22px 16px;background:#b98251;box-shadow:inset 0 0 0 2px #e1b17c,0 20px 55px #261a124f;backdrop-filter:none;color:#513b28}
+.j-notebook-heading{flex:0 0 auto;padding:0 6px 14px;color:#fff3d8;text-shadow:0 1px 2px #523018}
+.j-notebook-heading h1{font-family:"KaiTi","STKaiti",serif;font-size:clamp(22px,2.6vw,34px);margin:0 0 5px}
+.j-notebook-heading p{font-size:13px;margin:0}
+.j-notebook-spread{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;border-radius:4px 12px 12px 4px;background:#fff5dd;box-shadow:0 3px 0 #e2cfaa,0 6px 0 #f4e4c5,0 9px 0 #d8bc91,0 12px 14px #51351b55;outline-offset:3px}
+.j-notebook-spread::after{content:'';position:absolute;top:0;bottom:0;left:calc(50% - 15px);width:30px;pointer-events:none;background:linear-gradient(90deg,transparent,#7e5d3036 45%,#fff8e6b0 53%,transparent);z-index:2}
+.j-notebook-leaf{position:relative;min-height:0;min-width:0;display:grid;grid-template-rows:repeat(2,minmax(0,1fr));gap:18px;padding:20px 28px 28px;background:repeating-linear-gradient(transparent 0,transparent 29px,#b9a98522 30px,#b9a98522 31px);box-sizing:border-box}
+.j-paper-number{position:absolute;bottom:5px;left:0;right:0;text-align:center;font:italic 12px Georgia,serif;color:#99815d}
+.journey .j-memory-card{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;padding:9px 9px 7px;border:1px solid #d9c9aa;background:#fffdf6;color:#493b2b;text-align:left;border-radius:2px;box-shadow:1px 3px 7px #62462026;transition:transform .15s,box-shadow .15s;cursor:pointer}
+.j-memory-card::before{content:'';position:absolute;top:-7px;left:35%;width:30%;height:16px;background:#d7bb79a6;transform:rotate(-3deg);z-index:3;box-shadow:0 1px 1px #8a6d2f1a}
+.j-memory-card:hover{transform:translateY(-2px);box-shadow:1px 6px 12px #62462040}
+.j-memory-art{position:relative;display:block;flex:1;min-height:0;overflow:hidden;background:#f4ecd8}
+.j-memory-art>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fffaf0}
+.j-memory-art .j-shot-placeholder{padding:14px;box-sizing:border-box;justify-content:center;height:100%;font-family:"KaiTi","STKaiti",serif}
+.j-memory-art .j-shot-placeholder p{font-size:16px;line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.j-memory-caption{flex:0 0 auto;display:grid;grid-template-columns:24px 1fr;gap:2px 5px;align-items:center;padding:7px 2px 0}
+.j-memory-caption i{grid-row:1/3;font:italic 17px Georgia,serif;color:#a3855c}
+.j-memory-caption strong{font-size:14px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.j-memory-caption small{font-size:10px;color:#8e795e}
+.j-notebook-empty{align-self:center;text-align:center;font:18px "KaiTi",serif;color:#9a8468}
+.j-notebook-controls{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:20px 0 0;color:#fff3d8}
+.j-notebook-controls>span{margin-left:auto;font:14px Georgia,serif}
+.journey .j-page-arrow{min-width:50px;min-height:44px;padding:0 12px;border:2px solid #684327;border-radius:9px;background:#ffe5a8;color:#654225;font:700 27px/1 sans-serif;box-shadow:0 3px 0 #684327}
+.j-page-arrow:disabled{opacity:.4;cursor:default}
+.j-page-arrow:hover:not(:disabled){background:#fff0c8;transform:translateY(-1px)}
+.journey .j-notebook-back{min-height:44px;background:transparent;color:#fff5df;font-size:14px;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:800px){
+ .journey:not(.journal-view) .j-header{flex-wrap:wrap;justify-content:space-between;gap:12px}
+ .journey:not(.journal-view) .j-header nav{width:100%;justify-content:flex-end;gap:8px}
+ .journey:not(.journal-view) .j-header nav button{white-space:nowrap;font-size:14px;min-height:44px}
+ .journey .j-stop button .j-stop-note{font-size:10px;bottom:5px}
+ .j-route:not(.creative-route) .j-stop button{grid-row:1/4;grid-column:1}
+ .j-route:not(.creative-route) .j-stop>strong{grid-column:2;grid-row:2;margin:0}
+ .journal-view .j-header{padding:8px 12px;min-height:70px;gap:6px}
+ .journal-view .j-header nav{flex-wrap:wrap;justify-content:flex-end;gap:6px}
+ .journal-view .j-header nav button{font-size:12px;min-height:36px;padding:4px 8px}
+ .journal-view .j-header .j-brand{font-size:17px!important;padding:4px 8px;letter-spacing:0}
+ .journal-view .j-brand small{font-size:7px}
+ .journal-view .j-emblem{display:none}
+ .journal-view .j-notebook{width:calc(100% - 20px);margin:5px 10px 16px;padding:14px 10px 8px;border-width:4px;border-radius:10px 15px 15px 10px}
+ .j-notebook-heading{padding:0 3px 10px}.j-notebook-heading h1{font-size:22px}.j-notebook-heading p{font-size:11px;line-height:1.5}
+ .j-notebook-leaf{padding:15px 9px 22px;gap:15px}.j-notebook-spread::after{width:16px;left:calc(50% - 8px)}
+ .journey .j-memory-card{padding:6px 6px 5px}.j-memory-caption{grid-template-columns:1fr;padding-top:5px}.j-memory-caption i{display:none}
+ .j-memory-caption strong{font-size:12px;line-height:1.4;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+ .j-memory-caption small{font-size:9px}.j-memory-art .j-shot-placeholder{padding:8px}.j-memory-art .j-shot-placeholder p{font-size:13px}
+ .j-notebook-controls{padding-top:17px;gap:10px}.j-notebook-controls>span{font-size:12px}.journey .j-notebook-back{font-size:12px}
+}
+@media(max-width:500px){.j-mode-actions{flex-direction:column;width:min(260px,78%);gap:22px}.journey .j-mode-actions .j-space-login{font-size:22px}}
+@media(max-height:500px){.journal-view .j-header{min-height:52px;padding:5px 12px}.j-notebook-heading p,.j-memory-caption small{display:none}.j-notebook-heading h1{font-size:20px}.j-notebook-leaf{gap:12px;padding:12px 18px 18px}.journal-view .j-notebook{padding-top:8px;margin-bottom:10px}.j-notebook-controls{padding-top:13px}.j-notebook-heading{padding-bottom:7px}}
+@media(prefers-reduced-motion:reduce){.j-memory-card,.j-mode-actions button{transition:none}}
+/* 映光庭结局：放大朋友头像，让简洁的选择按钮落在画面下方。 */
+.journey.ending-view{display:flex;flex-direction:column}
+.journey.ending-view .j-header{flex:0 0 auto}
+.journey.theme-light .j-ending{flex:1 0 auto;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;padding:30px 32px clamp(36px,8vh,88px)}
+.journey.theme-light .j-ending h1{margin:12px 0 20px}
+.journey.theme-light .j-ending .j-friends{gap:14px;margin:18px 0 50px;flex-wrap:wrap}
+.journey.theme-light .j-ending .j-portrait{width:72px;height:72px;border:3px solid #fffaf0;box-shadow:0 4px 12px #526b7b26}
+.journey.theme-light .j-ending-choices{display:flex;justify-content:center;gap:32px;margin-top:auto;padding-top:24px}
+.journey.theme-light .j-ending-choices button{width:180px;min-height:62px;padding:12px 28px;border:2px solid #6c8597;border-radius:18px;background:linear-gradient(#fbfcf6,#dce8ef);color:#40596c;box-shadow:0 4px 0 #8198a8,inset 0 2px 0 #ffffffcc,0 8px 18px #40596c20;text-align:center;font-family:"STHupo","华文琥珀","YouYuan","幼圆",sans-serif;font-size:24px;letter-spacing:.12em}
+.journey.theme-light .j-ending-choices button[data-ending="stay"]{background:linear-gradient(#fffaf3,#e7dfed);border-color:#8a7896;color:#665571;box-shadow:0 4px 0 #a092aa,inset 0 2px 0 #ffffffcc,0 8px 18px #66557120}
+.journey.theme-light .j-ending-choices button:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.journey.theme-light .j-ending-choices button:active{transform:translateY(2px);box-shadow:0 1px 0 #8198a8}
+.journey.theme-light .j-ending-choices button:focus-visible{outline:3px solid #40596c;outline-offset:6px}
+@media(max-width:800px){
+ .journey.theme-light .j-ending{padding:24px 20px 48px}
+ .journey.theme-light .j-ending .j-friends{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 32px}
+ .journey.theme-light .j-ending .j-portrait{width:60px;height:60px}
+ .journey.theme-light .j-ending-choices{gap:20px}
+ .journey.theme-light .j-ending-choices button{width:132px;min-height:56px;padding:10px 20px;font-size:22px}
+ .journey.ending-view .j-next.j-prev{top:auto;bottom:130px;transform:none}
+}
+
+/* Chapter lettering follows the illustrated setting; story copy stays unchanged. */
+.journey.page-chapter.theme-valley{
+ --chapter-title:#285943;
+ --chapter-copy:#304d38;
+ --chapter-outline:#f6efd1;
+ --chapter-shadow:#183c2866;
+}
+.journey.page-chapter.theme-wind{
+ --chapter-title:#825027;
+ --chapter-copy:#624323;
+ --chapter-outline:#fff0c9;
+ --chapter-shadow:#63361155;
+}
+.journey.page-chapter.theme-light{
+ --chapter-title:#575b8b;
+ --chapter-copy:#474f70;
+ --chapter-outline:#fbf4e5;
+ --chapter-shadow:#44497455;
+}
+.journey.page-chapter .j-map-heading>div{min-width:0;max-width:100%}
+.journey.page-chapter .j-map-heading h1{
+ font-family:"STHupo","华文琥珀","YouYuan","幼圆","Microsoft YaHei",sans-serif;
+ font-size:clamp(44px,4.7vw,64px);
+ font-weight:400;
+ line-height:1.25;
+ letter-spacing:.08em;
+ color:var(--chapter-title);
+ -webkit-text-stroke:4px var(--chapter-outline);
+ paint-order:stroke fill;
+ text-shadow:0 3px 0 var(--chapter-outline),0 5px 8px var(--chapter-shadow);
+ margin:10px 0 16px;
+}
+.journey.page-chapter .j-map-heading p:not(.j-eyebrow){
+ font-family:"YouYuan","幼圆","Microsoft YaHei","PingFang SC",sans-serif;
+ font-size:clamp(18px,1.65vw,22px);
+ font-weight:700;
+ line-height:1.7;
+ letter-spacing:.045em;
+ color:var(--chapter-copy);
+ -webkit-text-stroke:2px var(--chapter-outline);
+ paint-order:stroke fill;
+ text-shadow:0 2px 5px var(--chapter-shadow);
+ text-wrap:pretty;
+}
+@media(max-width:800px){
+ .journey.page-chapter .j-map-heading h1{font-size:42px;letter-spacing:.06em;-webkit-text-stroke-width:3px;margin-bottom:12px}
+ .journey.page-chapter .j-map-heading p:not(.j-eyebrow){font-size:18px;letter-spacing:.025em;line-height:1.65;-webkit-text-stroke-width:1.5px}
+}
