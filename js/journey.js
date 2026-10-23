@@ -10,7 +10,7 @@
  const ROUTE={
   valley:[[0,80],[17,52],[33,82],[65,54],[84,78]],
   wind:[[-12,54],[20,40],[52,20],[71,56],[100,46]],
-  light:[[2,66],[50,92],[76,70],[58,18],[86,2]]
+  light:[[2,66],[50,92],[76,70],[58,18],[86,-18]]
  };
  const routeOf=theme=>{
   const route=ROUTE[theme]||ROUTE.valley;
@@ -33,6 +33,10 @@
    this.root=$('journey');this.root.addEventListener('click',e=>{
     const b=e.target.closest('button[data-j]');if(!b||b.disabled)return;
     const act=b.dataset.j;
+    if(act==='save-menu'&&this.page==='modes')this.saveMenu(b.dataset.action);
+    if(act==='save-slot'&&this.page==='modes')this.selectSlot(Number(b.dataset.slot));
+    if(act==='save-confirm'&&this.page==='modes')this.applySlot();
+    if(act==='save-cancel'&&this.page==='modes')this.closeSaveMenu();
     if(act==='home')this.home();
     if(act==='launch')this.launch();
     if(act==='modes')this.modes();
@@ -88,9 +92,44 @@
   launch(){if(this.page==='home')this.modes();},
   modes(){
   this.clean();this.page='modes';
-  this.render('<main class="j-space"><canvas aria-label="宇宙中飞行的萤火号"></canvas><button class="j-mode-back" data-j="home" aria-label="返回开始画面">← 返回</button><div class="j-mode-title"><span class="j-mode-emblem" aria-hidden="true">✧</span><b>星隙几何</b><small>THE STAR-RIFT GEOMETRY</small></div><div class="j-mode-actions" aria-label="选择游戏模式"><button class="j-space-login" data-j="map" data-mode="normal" data-chapter="0" data-focus>冒险模式</button><button class="j-space-login" data-j="map" data-mode="challenge" data-chapter="0">挑战模式</button></div></main>','space');
+  this.render('<main class="j-space"><canvas aria-label="宇宙中飞行的萤火号"></canvas><button class="j-mode-back" data-j="home" aria-label="返回开始画面">← 返回</button><div class="j-mode-title"><span class="j-mode-emblem" aria-hidden="true">✧</span><b>星隙几何</b><small>THE STAR-RIFT GEOMETRY</small></div><nav class="j-save-actions" aria-label="存档管理"><button data-j="save-menu" data-action="restart">从头再来</button><button data-j="save-menu" data-action="save">存档</button><button data-j="save-menu" data-action="load">读档</button></nav><div class="j-mode-actions" aria-label="选择游戏模式"><button class="j-space-login" data-j="map" data-mode="normal" data-chapter="0" data-focus>冒险模式</button><button class="j-space-login" data-j="map" data-mode="challenge" data-chapter="0">挑战模式</button></div></main>','space');
   this.space=g.SpaceOpening.mount(this.root.querySelector('canvas'),()=>{});
  },
+  saveMenu(action){
+   if(this.page!=='modes'||!['restart','save','load'].includes(action))return;
+   this.saveAction=action;this.selectedSlot=null;
+   const labels={restart:'保存旧进度，从头再来',save:'保存当前进度',load:'读取存档'};
+   const cards=this.campaign.slots.map((slot,i)=>`<button data-j="save-slot" data-slot="${i}" ${action==='load'&&!slot?'disabled':''}><strong>存档 ${i+1}</strong><span>${slot?esc(new Date(slot.savedAt).toLocaleString('zh-CN')):'空存档'}</span><small>${slot?`冒险 ${slot.state.main}/15 · 挑战 ${slot.state.creative}/11`:'尚未保存'}</small></button>`).join('');
+   this.showSaveDialog(`<h2>${labels[action]}</h2><p>${action==='restart'?'请选择保存位置。保存成功后清空当前进度，已有存档保留。':action==='load'?'读取后会替换当前进度，请先保存需要保留的进度。':'请选择保存位置。'}</p><div class="j-save-slots">${cards}</div><button data-j="save-cancel">取消</button>`);
+  },
+  showSaveDialog(html){
+   this.root.querySelector('.j-save-dialog')?.remove();
+   const dialog=document.createElement('dialog');dialog.className='j-save-dialog';dialog.setAttribute('aria-label','存档管理');dialog.innerHTML=html;
+   dialog.addEventListener('cancel',e=>{e.preventDefault();this.closeSaveMenu();});
+   this.root.appendChild(dialog);dialog.showModal();
+  },
+  closeSaveMenu(){this.root.querySelector('.j-save-dialog')?.remove();this.selectedSlot=null;this.root.querySelector(`[data-action="${this.saveAction}"]`)?.focus();},
+  selectSlot(index){
+   if(!Number.isInteger(index)||index<0||index>2)return;
+   if(this.saveAction==='load'&&!this.campaign.slots[index])return;
+   this.selectedSlot=index;
+   const occupied=!!this.campaign.slots[index],load=this.saveAction==='load';
+   this.showSaveDialog(`<h2>${load?'读取':occupied?'覆盖':'使用'}存档 ${index+1}？</h2><p>${load?'当前进度将替换为这份存档。':occupied?'这份旧存档将被当前进度替换。':'当前进度将保存到这里。'}${this.saveAction==='restart'?'保存成功后将从头开始。':''}</p><div class="j-save-confirm"><button data-j="save-confirm">${load?'确认读档':this.saveAction==='restart'?'保存并重新开始':'确认保存'}</button><button data-j="save-cancel">取消</button></div>`);
+  },
+  applySlot(){
+   const index=this.selectedSlot,action=this.saveAction;
+   if(!Number.isInteger(index)||!['restart','save','load'].includes(action))return;
+   const ok=action==='load'?this.campaign.loadSlot(index):this.campaign.saveSlot(index,action==='restart');
+   if(!ok){this.showSaveDialog('<h2>未能保存进度</h2><p>浏览器存储不可用或空间不足，当前进度没有清空。请检查后重试。</p><button data-j="save-cancel">返回</button>');return;}
+   this.closeSaveMenu();
+   if(action!=='save'){
+    try{storage?.removeItem(S.KEY+'.reader');}catch(e){}
+    this.mode='normal';this.chapter=action==='load'?Math.min(2,Math.floor(this.campaign.state.main/5)):0;
+    A.score=0;A.entryScore=0;A.level=1;this.journalPage=0;
+   }
+   if(action==='restart'){this.resumeStory();return;}
+   this.flash(action==='load'?'存档已读取，选择模式继续游戏。':'进度已保存。');
+  },
   back(){
   if(this.page==='help'&&this.helpFrom){const from=this.helpFrom;this.mode=from.mode;this.chapter=from.chapter;if(from.page==='journal'){this.journal(from.journalPage);return;}if(from.page==='choice'){this.choice();return;}if(from.page==='departed'){this.departed();return;}if(from.page==='map'){this.map(from.mode,from.chapter);return;}}
   if(this.page==='journal'){this.map(this.mode,this.chapter);return;}

@@ -22,18 +22,38 @@
  function target(level){return starSteps(level)[0];}
  const fresh=()=>({version:1,main:0,creative:0,ending:null,ifLine:false,pending:['opening'],seen:[],best:{normal:{},challenge:{}}});
  function expectedIds(){return new Set(['opening','travel-01','travel-02','farewell','leave','stay','if-life',...Array.from({length:15},(_,i)=>'main-'+pad(i+1)),...Array.from({length:11},(_,i)=>'life-'+pad(i+1)),...Array.from({length:11},(_,i)=>'home-'+pad(i+1))]);}
+ function validState(s){const ids=expectedIds();return !!(s&&s.version===1&&valid(s.main,15)&&valid(s.creative,11)&&[null,'leave','stay'].includes(s.ending)&&typeof s.ifLine==='boolean'&&Array.isArray(s.pending)&&s.pending.every(x=>ids.has(x))&&Array.isArray(s.seen)&&s.seen.every(x=>ids.has(x))&&s.best&&typeof s.best==='object'&&(!s.ifLine||s.ending==='leave'));}
  class Campaign{
   constructor(storage,{allUnlocked=ALL_UNLOCKED}={}){
-   this.allUnlocked=allUnlocked;this.storage=storage;this.storageAvailable=true;this.state=fresh();
+   this.allUnlocked=allUnlocked;this.storage=storage;this.storageAvailable=true;this.state=fresh();this.slots=[null,null,null];
    try{
-    const s=JSON.parse(storage?.getItem(KEY)||'null'),ids=expectedIds();
-    if(s&&s.version===1&&valid(s.main,15)&&valid(s.creative,11)&&[null,'leave','stay'].includes(s.ending)&&typeof s.ifLine==='boolean'&&Array.isArray(s.pending)&&s.pending.every(x=>ids.has(x))&&Array.isArray(s.seen)&&s.seen.every(x=>ids.has(x))&&s.best&&typeof s.best==='object'&&(!s.ifLine||s.ending==='leave')){
-     this.state={...s,seen:[...new Set(s.seen)],pending:[...new Set(s.pending)],best:{normal:{},challenge:{}}};
+    const saved=JSON.parse(storage?.getItem(KEY)||'null'),s=saved?.state||saved,ids=expectedIds();
+    if(Array.isArray(saved?.slots))this.slots=Array.from({length:3},(_,i)=>{const slot=saved.slots[i];return validState(slot?.state)&&typeof slot.savedAt==='string'&&!Number.isNaN(Date.parse(slot.savedAt))?slot:null;});
+    if(validState(s)){
+     const {slots:archived,...progress}=s;
+     this.state={...progress,seen:[...new Set(s.seen)],pending:[...new Set(s.pending)],best:{normal:{},challenge:{}}};
      for(const mode of ['normal','challenge'])for(const [k,v] of Object.entries(s.best[mode]||{}))if(valid(Number(k),mode==='normal'?15:11)&&Number(k)>0&&Number.isFinite(v)&&v>=0)this.state.best[mode][k]=v;
     }
    }catch(e){if(e?.name!=='SyntaxError')this.storageAvailable=false;}
   }
-  persist(){try{if(!this.storage)throw Error('Storage unavailable');this.storage.setItem(KEY,JSON.stringify(this.state));}catch(e){this.storageAvailable=false;}}
+  write(state,slots){
+   try{
+    if(!this.storage)throw Error('Storage unavailable');
+    this.storage.setItem(KEY,JSON.stringify({...state,slots}));
+    this.state=state;this.slots=slots;this.storageAvailable=true;return true;
+   }catch(e){this.storageAvailable=false;return false;}
+  }
+  persist(){return this.write(this.state,this.slots);}
+  saveSlot(index,restart=false){
+   if(!Number.isInteger(index)||index<0||index>=3)return false;
+   const slots=this.slots.slice();
+   slots[index]={savedAt:new Date().toISOString(),state:JSON.parse(JSON.stringify(this.state))};
+   return this.write(restart?fresh():this.state,slots);
+  }
+  loadSlot(index){
+   if(!Number.isInteger(index)||index<0||index>=3||!validState(this.slots[index]?.state))return false;
+   return this.write(JSON.parse(JSON.stringify(this.slots[index].state)),this.slots);
+  }
   get homeLine(){return this.state.ending==='leave'&&!this.state.ifLine;}
   challengeStory(level){return (this.homeLine?'home-':'life-')+pad(level);}
   get unlockedCreative(){return this.allUnlocked||this.state.ending==='stay'||this.homeLine||this.state.ifLine;}
