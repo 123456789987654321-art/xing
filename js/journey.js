@@ -42,7 +42,11 @@
     if(act==='modes')this.modes();
     if(act==='back')this.back();
     if(act==='continue')this.continue();
-    if(act==='map')this.map(b.dataset.mode||this.mode,Number(b.dataset.chapter??this.chapter));
+    if(act==='map'){
+     const mode=b.dataset.mode||this.mode,position=this.campaign.state.position;
+     const chapter=this.page==='modes'&&mode==='normal'&&Number.isInteger(position)&&position>=1&&position<=15?Math.floor((position-1)/5):Number(b.dataset.chapter??this.chapter);
+     this.map(mode,chapter);
+    }
     if(act==='start')this.start(this.mode,Number(b.dataset.level));
     if(act==='read')this.resumeStory();
     if(act==='next-panel')this.nextPanel();
@@ -66,11 +70,14 @@
     else if(this.page==='comic'&&e.key==='ArrowLeft'){e.preventDefault();this.previousPanel();}
     else if(this.page==='journal'&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();this.journal(this.journalPage+(e.key==='ArrowRight'?1:-1));}
    });
+   g.addEventListener?.('resize',()=>{
+    if(this.page==='map'&&this.mode==='normal'){this.cancelWalk();this.placeWalker(this.campaign.state.position);}
+   });
    this.home();
   },
-  clean(){this.space?.stop();this.space=null;original.toMenu.call(A);document.body.classList.remove('journey-game');this.visible=true;A.state='menu';$('menu').classList.add('hidden');$('hud').classList.add('hidden');$('gl').classList.add('journey-idle');this.root.hidden=false;},
+  clean(){this.cancelWalk();this.space?.stop();this.space=null;original.toMenu.call(A);document.body.classList.remove('journey-game');this.visible=true;A.state='menu';$('menu').classList.add('hidden');$('hud').classList.add('hidden');$('gl').classList.add('journey-idle');this.root.hidden=false;},
   render(html,theme='valley',extra=''){
-   this.epoch++;this.visible=true;this.root.hidden=false;this.root.className='journey theme-'+theme+(this.page==='comic'?' comic-sky':'')+(extra?' '+extra:'');this.root.innerHTML=html;
+   this.cancelWalk();this.epoch++;this.visible=true;this.root.hidden=false;this.root.className='journey theme-'+theme+(this.page==='comic'?' comic-sky':'')+(extra?' '+extra:'');this.root.innerHTML=html;
    this.root.querySelectorAll('img').forEach(img=>{
     const loaded=()=>{img.parentElement.classList.add('art-ready');const draft=img.parentElement.querySelector('.j-shot-placeholder');if(draft)draft.hidden=true;};
     const failed=()=>{img.hidden=true;img.parentElement.classList.add('art-missing');};
@@ -147,14 +154,78 @@
   this.map('normal',Math.min(2,Math.floor(s.main/5)));
  },
   nextStop(){
-   if(this.chapter<2){
-    const next=this.chapter+1,id=next===1?'travel-01':'travel-02',s=this.campaign.state;
+   if(this.walking||this.page!=='map'||this.mode!=='normal'||this.chapter>=2)return;
+   if(!REVIEW&&this.campaign.state.main<(this.chapter+1)*5)return;
+   const next=this.chapter+1,first=this.chapter*5+1,last=first+4,s=this.campaign.state;
+   const cleared=s.main>=last||Array.from({length:5},(_,i)=>first+i).every(level=>Object.hasOwn(s.best.normal,level));
+   const departure=cleared&&Number.isInteger(s.position)&&s.position>=first&&s.position<=last?s.position:last;
+   this.walkTo(departure,()=>{
+    this.campaign.state.position=next*5+1;this.campaign.persist();
+    const id=next===1?'travel-01':'travel-02',s=this.campaign.state;
     if(!s.seen.includes(id)&&!s.pending.includes(id)){s.pending=[...s.pending,id];this.campaign.persist();this.resumeStory();return;}
-    this.map('normal',next);return;
-   }
-   if(REVIEW)this.choice();else this.continue();
+    this.map('normal',next);
+   },1);
   },
-  prevStop(){if(this.chapter<=0)return;this.map('normal',this.chapter-1);},
+  prevStop(){
+   if(this.walking||this.page!=='map'||this.mode!=='normal'||this.chapter<=0)return;
+   const previous=this.chapter-1;
+   this.walkTo(this.chapter*5+1,()=>{this.campaign.state.position=(previous+1)*5;this.campaign.persist();this.map('normal',previous);},-1);
+  },
+  routePath(theme,from,to){
+   const route=routeOf(theme),points=[route[Math.min(from,to)].slice()],bends=BEND[theme]||{};
+   for(let i=Math.min(from,to);i<Math.max(from,to);i++){
+    const a=route[i],b=route[i+1],c=bends[i];
+    for(let n=1;n<=20;n++){const t=n/20,u=1-t;points.push(c?[u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]]:[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}
+   }
+   return from>to?points.reverse():points;
+  },
+  cancelWalk(){
+   this.walkToken=(this.walkToken||0)+1;
+   this.walkAnimation?.cancel();this.walkAnimation=null;this.walking=false;
+   this.root?.classList?.remove('is-walking');this.root?.removeAttribute?.('aria-busy');
+  },
+  walkerPoint(level){
+   const route=this.root.querySelector('.j-route'),button=this.root.querySelector(`[data-level="${level}"]`);
+   if(!route?.getBoundingClientRect||!button?.getBoundingClientRect)return null;
+   const r=route.getBoundingClientRect(),b=button.getBoundingClientRect(),mobile=g.innerWidth<=800;
+   return mobile?[b.left-r.left-26,b.bottom-r.top]:[Math.min(g.innerWidth-r.left-40,b.right-r.left+32),b.bottom-r.top+12];
+  },
+  placeWalker(level){
+   const walker=this.root.querySelector('.j-walker'),p=this.walkerPoint(level);
+   if(!walker||!p)return;
+   walker.style.left=p[0]+'px';walker.style.top=p[1]+'px';walker.style.opacity='1';
+   walker.setAttribute('aria-label',`小航停在第 ${(level-1)%5+1} 关`);
+  },
+  walkTo(level,onArrival=()=>{},exit=0){
+   if(this.walking||this.page!=='map'||this.mode!=='normal')return false;
+   const first=this.chapter*5+1,last=first+4;
+   if(!Number.isInteger(level)||level<first||level>last)return false;
+   const from=Math.max(first,Math.min(last,this.campaign.state.position||first)),walker=this.root.querySelector('.j-walker'),route=this.root.querySelector('.j-route');
+   const finish=()=>{
+    this.campaign.state.position=level;this.campaign.persist();this.placeWalker(level);
+    this.root.querySelectorAll?.('.j-stop').forEach(node=>node.classList.toggle('current',Number(node.querySelector('[data-level]')?.dataset.level)===level));
+    onArrival();
+   };
+   if(!walker?.animate||!route?.getBoundingClientRect||g.matchMedia?.('(prefers-reduced-motion: reduce)').matches){finish();return true;}
+   const r=route.getBoundingClientRect(),mobile=g.innerWidth<=800,theme=D.chapters[this.chapter].theme;
+   let points;
+   if(mobile){points=[];const step=from<=level?1:-1;for(let n=from;;n+=step){points.push(this.walkerPoint(n));if(n===level)break;}}
+   else points=[this.walkerPoint(from),...this.routePath(theme,from-first,level-first).map(([x,y])=>[x*r.width/100,y*r.height/100]),this.walkerPoint(level)];
+   if(from===level)points=[this.walkerPoint(level)];
+   if(exit){const p=points.at(-1);points.push(mobile?[p[0],exit>0?r.height+140:-140]:[exit>0?g.innerWidth-r.left+100:-r.left-100,p[1]]);}
+   if(points.length===1){finish();return true;}
+   let length=0;const distances=points.map((p,i)=>{if(i)length+=Math.hypot(p[0]-points[i-1][0],p[1]-points[i-1][1]);return length;});
+   const frames=points.map((p,i)=>({left:p[0]+'px',top:p[1]+'px',offset:length?distances[i]/length:i/(points.length-1),opacity:exit&&i===points.length-1?0:1}));
+   this.walking=true;this.root.classList.add('is-walking');this.root.setAttribute('aria-busy','true');
+   const token=this.walkToken=(this.walkToken||0)+1;
+   const animation=this.walkAnimation=walker.animate(frames,{duration:Math.max(450,Math.min(5000,length/0.4)),easing:'linear',fill:'forwards'});
+   animation.finished.then(()=>{
+    if(token!==this.walkToken)return;
+    this.walkAnimation=null;this.walking=false;this.root.classList.remove('is-walking');this.root.removeAttribute('aria-busy');
+    animation.cancel();finish();
+   }).catch(()=>{});
+   return true;
+  },
   flash(text){
    if(!this.root)return;
    const el=document.createElement('div');el.className='j-toast';el.textContent=text;
@@ -172,7 +243,9 @@
   }
   const c=D.chapters[creative?0:this.chapter],route=typeof routeOf==='function'?routeOf(c.theme):ROUTE;
   const done=creative?s.creative:s.main,start=creative?1:this.chapter*5+1,count=creative?11:5;
-  const hasPending=s.pending.length>0,current=Math.max(start,Math.min(start+count-1,done+(hasPending?0:1)));
+  const hasPending=s.pending.length>0,savedPosition=s.position;
+  const current=!creative&&Number.isInteger(savedPosition)&&savedPosition>=start&&savedPosition<start+count?savedPosition:Math.max(start,Math.min(start+count-1,done+(hasPending?0:1)));
+  if(!creative)s.position=current;
   const nodes=Array.from({length:count},(_,i)=>{
    const level=start+i,passed=level<=done||Object.hasOwn(s.best[mode],level),unlocked=this.canEnter(mode,level),size=creative?D.creativeNames[i]:`${5+i} × ${5+i}`;
    const pos=creative?`--step:${i};--rise:${[1,0,1,0,1][i%5]}`:`--x:${route[i][0]}%;--y:${route[i][1]}%`,mark=creative?'':`<i class="j-stop-icon" aria-hidden="true">${themeIcon(c.theme)}</i>`;
@@ -189,13 +262,20 @@
     return `<i class="j-trail-dot" style="--x:${x.toFixed(1)}%;--y:${y.toFixed(1)}%"></i>`;
    }).join('');
   }).join('');
-  const walker=creative?'':`<div class="j-walker ${walkFrom!==null?'walking':''}" style="--at:${local};--from:${walkIndex};--x:${route[local][0]}%;--y:${route[local][1]}%;--from-x:${route[walkIndex][0]}%;--from-y:${route[walkIndex][1]}%" aria-label="小航走到第${local+1}关"><img class="j-walker-body" src="assets/story/characters/hang-full.png" alt=""><span>小航</span></div>`;
-  this.render(`${creative?'':this.scene(c.id)}${this.head(creative?(homeLine?'挑战模式 · 回家后的故事':'挑战模式 · 在未来的日子里'):c.tag)}<main class="j-map">${creative||this.chapter===0?'':`<button class="j-next j-prev" data-j="prev" aria-label="上一站：${D.chapters[this.chapter-1].name}"><span>上一站</span></button>`}${creative?'':`<button class="j-next" data-j="next" ${(REVIEW||s.main>=(this.chapter+1)*5)?'':'disabled'} aria-label="前往下一站：${this.chapter<2?D.chapters[this.chapter+1].name:'送行的泊位'}"><span>下一站</span></button>`}${creative&&!homeLine?'':`<div class="j-map-heading"><div><h1>${creative?(homeLine?'回家后的日子':'留下来的日子'):c.name}</h1><p>${creative?(homeLine?'把灯带回家，让书信和重逢延续彼此的故事。':'一起修建、一起庆祝，把普通的每一天写成故事。'):c.description}</p></div></div>`}${this.note()}<div class="j-route ${creative?'creative-route':''}" style="--stops:${count}"><div class="j-route-line"></div>${trail}${nodes}${walker}</div><div class="j-map-bottom"><div class="j-actions">${creative&&homeLine&&!hasPending?'<button class="j-secondary" data-j="if">假设他留下来的生活 →</button>':''}${hasPending?'<button class="j-primary" data-j="read">阅读刚刚发生的故事 →</button>':''}${creative&&done===11?'<span class="j-complete">生活相册已集齐，可以重玩或回看故事。</span>':''}</div></div></main>`,c.theme,creative?'page-creative':'page-chapter');
+  const walker=creative?'':`<div class="j-walker " style="--at:${local};--from:${walkIndex};--x:${route[local][0]}%;--y:${route[local][1]}%;--from-x:${route[walkIndex][0]}%;--from-y:${route[walkIndex][1]}%" aria-label="小航走到第${local+1}关"><img class="j-walker-body" src="assets/story/characters/hang-full.png" alt=""><span>小航</span></div>`;
+  this.render(`${creative?'':this.scene(c.id)}${this.head(creative?(homeLine?'挑战模式 · 回家后的故事':'挑战模式 · 在未来的日子里'):c.tag)}<main class="j-map">${creative||this.chapter===0?'':`<button class="j-next j-prev" data-j="prev" aria-label="上一站：${D.chapters[this.chapter-1].name}"><span>上一站</span></button>`}${creative||this.chapter===2?'':`<button class="j-next" data-j="next" ${(REVIEW||s.main>=(this.chapter+1)*5)?'':'disabled'} aria-label="前往下一站：${this.chapter<2?D.chapters[this.chapter+1].name:'送行的泊位'}"><span>下一站</span></button>`}${creative&&!homeLine?'':`<div class="j-map-heading"><div><h1>${creative?(homeLine?'回家后的日子':'留下来的日子'):c.name}</h1><p>${creative?(homeLine?'把灯带回家，让书信和重逢延续彼此的故事。':'一起修建、一起庆祝，把普通的每一天写成故事。'):c.description}</p></div></div>`}${this.note()}<div class="j-route ${creative?'creative-route':''}" style="--stops:${count}"><div class="j-route-line"></div>${trail}${nodes}${walker}</div><div class="j-map-bottom"><div class="j-actions">${creative&&homeLine&&!hasPending?'<button class="j-secondary" data-j="if">假设他留下来的生活 →</button>':''}${hasPending?'<button class="j-primary" data-j="read">阅读刚刚发生的故事 →</button>':''}${creative&&done===11?'<span class="j-complete">生活相册已集齐，可以重玩或回看故事。</span>':''}</div></div></main>`,c.theme,creative?'page-creative':'page-chapter');
+  if(!creative)this.placeWalker(current);
  },
   canEnter(mode,level){return this.campaign.canEnter(mode,level);},
   start(mode,level){
+   if(this.walking||!this.canEnter(mode,level))return false;
+   if(mode==='normal'&&this.page==='map'&&this.mode==='normal'&&Math.floor((level-1)/5)===this.chapter)return this.walkTo(level,()=>this.enterLevel(mode,level));
+   return this.enterLevel(mode,level);
+  },
+  enterLevel(mode,level){
    if(!this.canEnter(mode,level))return false;
-   this.mode=mode;this.clean();this.visible=false;this.root.hidden=true;$('gl').classList.remove('journey-idle');
+   if(mode==='normal'){this.campaign.state.position=level;this.campaign.persist();}
+   this.mode=mode;this.clean();this.page='game';this.visible=false;this.root.hidden=true;$('gl').classList.remove('journey-idle');
    A.mode=mode;A.level=level;A.score=0;A.entryScore=0;A.newRecord=false;A.startLevel(true);return true;
   },
   skin(mode,level){
@@ -207,10 +287,12 @@
    if(caption)caption.textContent=c.name+' / '+(mode==='normal'?c.kind:'在未来的日子里');
   },
   settled(mode,level,score){
-  if(!this.campaign.complete(mode,level,score))return;
-  this.map(mode,mode==='normal'?Math.floor((level-1)/5):0);
-  if(!REVIEW&&this.campaign.state.pending.length){const token=this.epoch;setTimeout(()=>{if(this.visible&&this.epoch===token)this.resumeStory();},900);}
- },
+   if(!this.campaign.complete(mode,level,score))return;
+   if(mode==='normal')this.campaign.state.position=level;
+   this.map(mode,mode==='normal'?Math.floor((level-1)/5):0);
+   const afterWalk=()=>{if(!REVIEW&&this.campaign.state.pending.length){const token=this.epoch;setTimeout(()=>{if(this.visible&&this.epoch===token)this.resumeStory();},900);}};
+   if(mode==='normal'&&this.page==='map')this.walkTo(Math.min(level+1,(this.chapter+1)*5),afterWalk);else afterWalk();
+  },
   resumeStory(){const id=this.campaign.state.pending[0];if(id)this.comic(id,false);else this.continue();},
   comic(id,replay=false){
    if(!D.stories[id]||(replay&&!REVIEW&&!this.campaign.state.seen.includes(id)))return;

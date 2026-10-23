@@ -40,7 +40,7 @@ test('next stop advances scene and level range with zero clears',()=>{
  f.j.finishComic();assert.equal(f.j.chapter,1);assert.match(f.html(),/data-level="6"/);assert.match(f.html(),/data-level="10"/);
  f.click({j:'next'});assert.equal(f.j.page,'comic');assert.equal(f.j.story.id,'travel-02');assert.match(f.j.story.pages[0],/light-0\.jpg/);
  f.j.finishComic();assert.equal(f.j.chapter,2);assert.match(f.html(),/data-level="11"/);assert.match(f.html(),/data-level="15"/);
- f.click({j:'next'});assert.equal(f.j.page,'choice');assert.equal(f.j.campaign.state.main,0);
+ f.click({j:'next'});assert.equal(f.j.page,'map');assert.equal(f.j.chapter,2);assert.doesNotMatch(f.html(),/data-j="next"/);assert.equal(f.j.campaign.state.main,0);
 });
 test('only actually cleared buttons contain a completion label inside the button',()=>{
  const f=fixture();f.j.campaign.complete('normal',4,S.target(4));f.j.map('normal',0);
@@ -48,6 +48,11 @@ test('only actually cleared buttons contain a completion label inside the button
  const buttons=[...f.html().matchAll(/<button data-j="start"[^>]*>(.*?)<\/button>/gs)];assert.equal(buttons.length,5);
  buttons.forEach((b,i)=>assert.equal(b[1].includes('已通关'),i===3));
  assert.equal((f.html().match(/j-stop unpassed/g)||[]).length,4);
+});
+test('adventure entry retains the chapter and position restored from a save',()=>{
+ const f=fixture();f.j.campaign.state.position=13;f.j.campaign.state.seen=['opening','travel-02'];
+ f.j.modes();f.click({j:'map',mode:'normal',chapter:'0'});
+ assert.equal(f.j.chapter,2);assert.equal(f.j.campaign.state.position,13);
 });
 test('notebook pagination exposes every story once and returns to the same spread after reading',()=>{
  const f=fixture();f.j.journal(0);const seen=[],expected=Object.keys(D.stories).filter(id=>id!=='farewell');

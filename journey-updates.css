@@ -140,3 +140,10 @@
 .j-save-dialog{width:min(520px,calc(100vw - 32px));max-height:85dvh;box-sizing:border-box;padding:24px;border:3px solid #795126;border-radius:20px;background:#fff5db;color:#51301b;box-shadow:0 16px 60px #0008}
 .j-save-dialog::backdrop{background:#071432bb}.j-save-dialog h2{margin-top:0}.j-save-dialog p{line-height:1.6}.j-save-slots{display:grid;gap:12px;margin:18px 0}.j-save-slots button{display:grid;gap:6px;text-align:left}.j-save-slots span,.j-save-slots small{font-size:14px}.j-save-dialog button:disabled{opacity:.5;cursor:not-allowed}.j-save-confirm{display:flex;flex-wrap:wrap;gap:12px}
 @media(max-width:500px){.journey .j-save-actions{right:14px;top:66px;gap:8px}.journey .j-save-actions button{font-size:13px;padding:8px 12px}.j-save-dialog{padding:18px}}
+
+/* Position the character by its feet; route motion uses sampled map coordinates. */
+.journey .j-route:not(.creative-route) .j-walker{transform:translate(-50%,-100%);pointer-events:none;animation:none}
+.journey.is-walking .j-walker-body{animation:j-step-bob .24s ease-in-out infinite alternate}
+.journey.is-walking [data-j="start"],.journey.is-walking [data-j="next"],.journey.is-walking [data-j="prev"]{cursor:wait}
+@keyframes j-step-bob{from{translate:0 0;rotate:-3deg}to{translate:0 -5px;rotate:3deg}}
+@media(prefers-reduced-motion:reduce){.journey.is-walking .j-walker-body{animation:none}}
